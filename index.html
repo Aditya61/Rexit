@@ -3,107 +3,164 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Rexit</title>
+<title>Recovery & Exit Tracker</title>
 <link rel="manifest" href="./manifest.json" />
-<meta name="theme-color" content="#14171F" />
+<meta name="theme-color" content="#05070D" />
 <link rel="icon" href="./icons/icon-192.png" />
 <style>
   :root {
-    --ink: #14171F;
-    --paper: #F7F5F0;
-    --rest: #3E8E86;
-    --rest-soft: #E4F1EF;
-    --exit: #C97A2B;
-    --exit-soft: #FBEEDF;
-    --report: #5B5A8C;
-    --report-soft: #ECEBF5;
-    --line: #E4E1D8;
-    --muted: #6B6B64;
-    --danger: #B44444;
+    --bg: #05070D;
+    --bg2: #0A1220;
+    --panel: rgba(10, 22, 40, 0.82);
+    --cyan: #38D9F9;
+    --cyan-dim: rgba(56, 217, 249, 0.35);
+    --cyan-glow: rgba(56, 217, 249, 0.22);
+    --gold: #E8B23D;
+    --gold-glow: rgba(232, 178, 61, 0.28);
+    --danger: #FF5C6C;
+    --danger-glow: rgba(255, 92, 108, 0.25);
+    --text: #DCEEFC;
+    --muted: #6E859C;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { margin: 0; padding: 0; background: var(--paper); }
+  html, body { margin: 0; padding: 0; background: var(--bg); }
   body {
-    color: var(--ink);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    line-height: 1.45;
+    color: var(--text);
+    font-family: ui-monospace, "SF Mono", "Courier New", monospace;
+    line-height: 1.5;
     padding-bottom: env(safe-area-inset-bottom, 0);
+    background:
+      radial-gradient(ellipse at top, #0d1830 0%, #05070D 60%),
+      repeating-linear-gradient(0deg, rgba(56,217,249,0.02) 0px, rgba(56,217,249,0.02) 1px, transparent 1px, transparent 3px);
   }
-  #app-root { max-width: 480px; margin: 0 auto; padding: 20px 16px 60px; }
+  #app-root { max-width: 480px; margin: 0 auto; padding: 20px 14px 60px; }
 
-  .masthead { margin-bottom: 22px; }
-  .masthead h1 { font-family: Georgia, "Iowan Old Style", serif; font-weight: 600; font-size: 28px; letter-spacing: -0.01em; margin: 0 0 4px; }
-  .masthead p { margin: 0; color: var(--muted); font-size: 14px; max-width: 34ch; }
+  .masthead { margin-bottom: 20px; text-align: center; }
+  .masthead .frame-tag { font-size: 11px; letter-spacing: 0.25em; color: var(--cyan); text-shadow: 0 0 8px var(--cyan-glow); }
+  .masthead h1 {
+    font-weight: 700; font-size: 24px; letter-spacing: 0.08em; margin: 6px 0 4px;
+    color: var(--text); text-shadow: 0 0 12px var(--cyan-glow);
+  }
+  .masthead p { margin: 0; color: var(--muted); font-size: 12px; max-width: 36ch; margin: 0 auto; }
 
-  .track { border-radius: 14px; padding: 18px 16px 20px; margin-bottom: 18px; border: 1px solid var(--line); }
-  .track.rest { background: var(--rest-soft); border-color: #cfe6e2; }
-  .track.exit { background: var(--exit-soft); border-color: #f0d9bd; }
-  .track.report { background: var(--report-soft); border-color: #d6d4ea; }
+  .track {
+    position: relative;
+    background: var(--panel);
+    border: 1px solid var(--cyan-dim);
+    box-shadow: 0 0 18px var(--cyan-glow), inset 0 0 24px rgba(56,217,249,0.04);
+    padding: 20px 16px 18px;
+    margin-bottom: 22px;
+    backdrop-filter: blur(2px);
+  }
+  .track::before, .track::after,
+  .track .corner-br, .track .corner-bl {
+    content: ""; position: absolute; width: 14px; height: 14px;
+    border-color: var(--cyan); border-style: solid; border-width: 0;
+  }
+  .track::before { top: -1px; left: -1px; border-top-width: 2px; border-left-width: 2px; }
+  .track::after { top: -1px; right: -1px; border-top-width: 2px; border-right-width: 2px; }
+  .track .corner-bl { bottom: -1px; left: -1px; border-bottom-width: 2px; border-left-width: 2px; }
+  .track .corner-br { bottom: -1px; right: -1px; border-bottom-width: 2px; border-right-width: 2px; }
 
-  .track h2 { font-family: Georgia, serif; font-size: 18px; margin: 0 0 2px; display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
-  .track .sub { font-size: 13px; color: var(--muted); margin: 0 0 14px; }
+  .track.exit { border-color: rgba(232,178,61,0.4); box-shadow: 0 0 18px var(--gold-glow), inset 0 0 24px rgba(232,178,61,0.04); }
+  .track.exit::before, .track.exit::after, .track.exit .corner-bl, .track.exit .corner-br { border-color: var(--gold); }
 
-  .streak { font-size: 13px; font-weight: 600; white-space: nowrap; }
-  .rest .streak { color: var(--rest); }
-  .exit .streak { color: var(--exit); }
+  .track h2 {
+    font-size: 14px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+    margin: 0 0 2px; display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
+    color: var(--cyan); text-shadow: 0 0 10px var(--cyan-glow);
+  }
+  .track.exit h2 { color: var(--gold); text-shadow: 0 0 10px var(--gold-glow); }
+  .track h2::before { content: '\25c6 ' ; }
+  .track .sub { font-size: 11px; color: var(--muted); margin: 0 0 16px; letter-spacing: 0.03em; }
 
-  .dots { display: flex; gap: 6px; margin-bottom: 14px; }
-  .dot { width: 22px; height: 22px; border-radius: 6px; background: #fff; border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--muted); }
-  .dot.hit { background: var(--rest); border-color: var(--rest); color: #fff; }
+  .streak { font-size: 11px; font-weight: 700; white-space: nowrap; letter-spacing: 0.05em; }
+
+  .dots { display: flex; gap: 6px; margin-bottom: 16px; }
+  .dot {
+    width: 24px; height: 24px; border: 1px solid var(--cyan-dim); background: rgba(0,0,0,0.3);
+    display: flex; align-items: center; justify-content: center; font-size: 9px; color: var(--muted);
+  }
+  .dot.hit { background: var(--cyan); border-color: var(--cyan); color: #04121a; box-shadow: 0 0 10px var(--cyan-glow); font-weight: 700; }
 
   .checklist { list-style: none; margin: 0 0 14px; padding: 0; }
-  .checklist li { display: flex; align-items: flex-start; gap: 10px; padding: 9px 0; border-bottom: 1px solid rgba(0,0,0,0.06); font-size: 14.5px; }
+  .checklist li {
+    display: flex; align-items: flex-start; gap: 10px; padding: 10px 0;
+    border-bottom: 1px dashed rgba(110,133,156,0.25); font-size: 13px;
+  }
   .checklist li:last-child { border-bottom: none; }
-  .checklist input[type="checkbox"] { width: 19px; height: 19px; margin-top: 1px; flex-shrink: 0; accent-color: var(--ink); }
-  .checklist label { flex: 1; cursor: pointer; }
+  .checklist li::before { content: "\25B8"; color: var(--cyan); flex-shrink: 0; margin-top: 1px; }
+  .track.exit .checklist li::before { color: var(--gold); }
+  .checklist input[type="checkbox"] {
+    appearance: none; width: 18px; height: 18px; margin-top: 0; flex-shrink: 0;
+    border: 1px solid var(--cyan-dim); background: rgba(0,0,0,0.3); cursor: pointer; position: relative;
+  }
+  .checklist input[type="checkbox"]:checked { background: var(--cyan); box-shadow: 0 0 8px var(--cyan-glow); }
+  .checklist input[type="checkbox"]:checked::after { content: "\u2713"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #04121a; }
+  .track.exit .checklist input[type="checkbox"]:checked { background: var(--gold); box-shadow: 0 0 8px var(--gold-glow); }
+  .checklist label { flex: 1; cursor: pointer; letter-spacing: 0.01em; }
   .checklist .done label { color: var(--muted); text-decoration: line-through; }
 
-  button { font-family: inherit; font-size: 14px; font-weight: 600; border: none; border-radius: 9px; padding: 11px 16px; cursor: pointer; }
-  .btn-rest { background: var(--rest); color: #fff; }
-  .btn-exit { background: var(--exit); color: #fff; }
-  .btn-report { background: var(--report); color: #fff; }
-  .btn-ghost { background: transparent; border: 1px solid var(--line); color: var(--ink); font-weight: 500; }
+  button {
+    font-family: inherit; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    border: 1px solid var(--cyan); background: rgba(56,217,249,0.1); color: var(--cyan);
+    padding: 11px 14px; cursor: pointer; box-shadow: 0 0 10px var(--cyan-glow);
+  }
+  .btn-exit { border-color: var(--gold); background: rgba(232,178,61,0.12); color: var(--gold); box-shadow: 0 0 10px var(--gold-glow); }
+  .btn-ghost { background: transparent; border-color: var(--muted); color: var(--muted); box-shadow: none; }
   .btn-block { display: block; width: 100%; text-align: center; }
 
   .save-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-  .save-note { font-size: 12.5px; color: var(--muted); }
+  .save-note { font-size: 11px; color: var(--cyan); letter-spacing: 0.05em; }
 
-  .offer-form { display: flex; gap: 8px; margin-top: 4px; margin-bottom: 10px; }
-  .offer-form input { flex: 1; font-family: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; background: #fff; min-width: 0; }
-  .offer-form input.ctc { flex: 0 0 84px; }
+  .offer-form { display: flex; gap: 8px; margin-top: 4px; margin-bottom: 12px; }
+  .offer-form input {
+    flex: 1; font-family: inherit; font-size: 13px; padding: 9px 10px;
+    border: 1px solid var(--cyan-dim); background: rgba(0,0,0,0.3); color: var(--text); min-width: 0;
+  }
+  .offer-form input.ctc { flex: 0 0 76px; }
 
-  .offer-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: #fff; border: 1px solid var(--line); border-radius: 9px; padding: 10px 12px; margin-bottom: 8px; }
-  .offer-row .who { font-size: 14px; font-weight: 600; }
-  .offer-row .ctc { font-size: 13px; color: var(--muted); }
-  .verdict { font-size: 11.5px; font-weight: 700; padding: 4px 8px; border-radius: 999px; white-space: nowrap; text-transform: uppercase; letter-spacing: 0.02em; }
-  .verdict.decline { background: #f2dede; color: var(--danger); }
-  .verdict.floor { background: #dcefe0; color: #2f7a44; }
-  .verdict.strong { background: #d7ecea; color: var(--rest); }
-  .verdict.stretch { background: #fde4c2; color: #8a5216; }
-  .remove-btn { background: none; border: none; color: var(--muted); font-size: 18px; line-height: 1; padding: 2px 4px; cursor: pointer; }
+  .offer-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    background: rgba(0,0,0,0.25); border: 1px solid rgba(232,178,61,0.25); padding: 10px 12px; margin-bottom: 8px;
+  }
+  .offer-row .who { font-size: 13px; font-weight: 700; letter-spacing: 0.03em; }
+  .offer-row .ctc { font-size: 11px; color: var(--muted); }
+  .verdict { font-size: 10px; font-weight: 700; padding: 4px 8px; white-space: nowrap; text-transform: uppercase; letter-spacing: 0.08em; border: 1px solid; }
+  .verdict.decline { color: var(--danger); border-color: var(--danger); text-shadow: 0 0 6px var(--danger-glow); }
+  .verdict.floor { color: #6FE39A; border-color: #6FE39A; text-shadow: 0 0 6px rgba(111,227,154,0.3); }
+  .verdict.strong { color: var(--cyan); border-color: var(--cyan); text-shadow: 0 0 6px var(--cyan-glow); }
+  .verdict.stretch { color: var(--gold); border-color: var(--gold); text-shadow: 0 0 6px var(--gold-glow); }
+  .remove-btn { background: none; border: none; color: var(--muted); font-size: 16px; line-height: 1; padding: 2px 4px; cursor: pointer; }
 
-  .empty { font-size: 13px; color: var(--muted); padding: 8px 0; }
-  .floor-note { font-size: 12.5px; color: var(--muted); background: #fff; border: 1px dashed var(--line); border-radius: 8px; padding: 8px 10px; margin-top: 10px; }
+  .empty { font-size: 12px; color: var(--muted); padding: 8px 0; }
+  .floor-note {
+    font-size: 11px; color: var(--muted); background: rgba(0,0,0,0.25);
+    border: 1px dashed var(--cyan-dim); padding: 9px 10px; margin-top: 10px; letter-spacing: 0.02em;
+  }
 
-  .report-summary { font-size: 14px; margin: 0 0 10px; }
-  .report-meta { font-size: 12px; color: var(--muted); margin: 0 0 12px; }
+  .report-summary { font-size: 13px; margin: 0 0 10px; color: var(--text); }
   .metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
-  .metric { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
-  .metric .v { font-size: 16px; font-weight: 700; }
-  .metric .k { font-size: 11px; color: var(--muted); }
-  .rec-list { margin: 0 0 12px; padding-left: 18px; font-size: 13.5px; }
+  .metric { background: rgba(0,0,0,0.25); border: 1px solid var(--cyan-dim); padding: 8px 10px; }
+  .metric .v { font-size: 15px; font-weight: 700; color: var(--cyan); text-shadow: 0 0 6px var(--cyan-glow); }
+  .metric .k { font-size: 10px; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+  .rec-list { margin: 0 0 12px; padding-left: 16px; font-size: 12.5px; color: var(--text); }
   .rec-list li { margin-bottom: 4px; }
-  .past-reports { font-size: 12.5px; color: var(--muted); }
-  .past-reports div { padding: 4px 0; border-top: 1px solid rgba(0,0,0,0.06); }
+  .past-reports { font-size: 11px; color: var(--muted); }
+  .past-reports div { padding: 5px 0; border-top: 1px dashed rgba(110,133,156,0.2); }
 
   .io-row { display: flex; gap: 8px; }
   .io-row button, .io-row label { flex: 1; }
   input[type="file"] { display: none; }
 
   .reset-row { text-align: center; margin-top: 8px; }
-  .reset-row button { background: none; border: none; color: var(--muted); font-size: 12px; text-decoration: underline; cursor: pointer; }
+  .reset-row button { background: none; border: none; color: var(--muted); font-size: 10px; letter-spacing: 0.1em; text-decoration: underline; cursor: pointer; box-shadow: none; }
 
-  .install-hint { font-size: 12.5px; color: var(--muted); background: #fff; border: 1px solid var(--line); border-radius: 9px; padding: 10px 12px; margin-bottom: 18px; }
+  .install-hint {
+    font-size: 11px; color: var(--muted); background: rgba(0,0,0,0.25);
+    border: 1px solid var(--cyan-dim); padding: 10px 12px; margin-bottom: 18px; letter-spacing: 0.02em;
+  }
+  .install-hint strong { color: var(--cyan); }
 </style>
 </head>
 <body>
@@ -253,18 +310,20 @@
 
     root.innerHTML = `
       <div class="masthead">
-        <h1>Two tracks</h1>
-        <p>Recovery and the exit plan, moving at the same time \u2014 neither waiting on the other. Everything here stays on this device.</p>
+        <div class="frame-tag">\u25C7 STATUS WINDOW \u25C7</div>
+        <h1>PLAYER LOG</h1>
+        <p>Vitality and the exit quest, tracked in parallel. Local data only.</p>
       </div>
 
       ${!isStandalone ? `
       <div class="install-hint">
-        Running in the browser right now. In Chrome's menu, tap <strong>"Add to Home screen"</strong> / <strong>"Install app"</strong> to use this like a normal offline app.
+        Running in browser mode. Chrome menu \u2192 <strong>"Add to Home screen"</strong> to install for real offline use.
       </div>` : ""}
 
       ${latestReport ? `
-      <section class="track report">
-        <h2>Latest analysis <span class="save-note">${latestReport.reportDate}</span></h2>
+      <section class="track">
+        <div class="corner-bl"></div><div class="corner-br"></div>
+        <h2>System Log <span class="save-note">${latestReport.reportDate}</span></h2>
         <p class="report-summary">${latestReport.summary}</p>
         ${Object.keys(latestReport.metrics || {}).length ? `
           <div class="metric-grid">
@@ -283,9 +342,10 @@
       </section>
       ` : ""}
 
-      <section class="track rest">
-        <h2>Recover <span class="streak">${streak}-day streak</span></h2>
-        <p class="sub">${today.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" })}</p>
+      <section class="track">
+        <div class="corner-bl"></div><div class="corner-br"></div>
+        <h2>Vitality <span class="streak">STREAK: ${streak}D</span></h2>
+        <p class="sub">${today.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" }).toUpperCase()}</p>
         <div class="dots">${dots.map(d => `<div class="dot ${d.hit ? "hit" : ""}">${d.label}</div>`).join("")}</div>
         <ul class="checklist" id="recovery-list">
           ${config.recoveryItems.map(item => `
@@ -296,14 +356,15 @@
           `).join("")}
         </ul>
         <div class="save-row">
-          <button class="btn-rest" id="save-recovery-btn">Save today</button>
+          <button id="save-recovery-btn">Save Progress</button>
           <span class="save-note" id="recovery-save-note"></span>
         </div>
       </section>
 
       <section class="track exit">
-        <h2>Exit</h2>
-        <p class="sub">Milestones toward handing in notice</p>
+        <div class="corner-bl"></div><div class="corner-br"></div>
+        <h2>Main Quest \u2014 Exit</h2>
+        <p class="sub">MILESTONES TO CLEAR</p>
         <ul class="checklist" id="exit-list">
           ${config.exitItems.map(item => `
             <li class="${exitState[item.id] ? "done" : ""}">
@@ -313,7 +374,7 @@
           `).join("")}
         </ul>
 
-        <h2 style="font-size:15px;margin-top:16px;">Offers on the table</h2>
+        <h2 style="font-size:12px;margin-top:16px;">Reward Offers</h2>
         <div class="offer-form">
           <input type="text" id="offer-company" placeholder="Company" />
           <input type="number" step="0.1" class="ctc" id="offer-ctc" placeholder="LPA" />
@@ -332,21 +393,22 @@
             }).join("")
           }
         </div>
-        <p class="floor-note">Floor: \u20B98\u20138.5L accept regardless of the clawback. \u20B99\u201310L is a strong outcome. \u20B912L+ is the stretch \u2014 take it if it shows up, don't wait for it.</p>
+        <p class="floor-note">FLOOR: \u20B98\u20138.5L clears instantly, clawback included. \u20B99\u201310L is a strong clear. \u20B912L+ is the rare drop \u2014 take it if it appears, don't farm for it.</p>
       </section>
 
-      <section class="track report">
-        <h2>Analysis loop</h2>
-        <p class="sub">Export your data to send to Claude, then import the report it gives back</p>
+      <section class="track">
+        <div class="corner-bl"></div><div class="corner-br"></div>
+        <h2>System Sync</h2>
+        <p class="sub">EXPORT TO ANALYZE \u00b7 IMPORT TO UPDATE QUEST LOG</p>
         <div class="io-row">
-          <button class="btn-report" id="export-btn">Export data</button>
-          <label class="btn-ghost btn-block" for="import-input" style="display:flex;align-items:center;justify-content:center;">Import report</label>
+          <button id="export-btn">Export Data</button>
+          <label class="btn-ghost btn-block" for="import-input" style="display:flex;align-items:center;justify-content:center;">Import Report</label>
           <input type="file" id="import-input" accept="application/json" />
         </div>
       </section>
 
       <div class="reset-row">
-        <button id="reset-btn">Reset all tracker data</button>
+        <button id="reset-btn">\u26A0 Reset All Status Data</button>
       </div>
     `;
 
