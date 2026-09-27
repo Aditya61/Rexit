@@ -1,5 +1,5 @@
 {
-  "name": "Recovery & Exit Tracker",
+  "name": "Rexit",
   "short_name": "Rec+Exit",
   "description": "Daily recovery checklist and job-exit milestone tracker, fully offline.",
   "start_url": "./index.html",
