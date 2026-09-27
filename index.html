@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Rexit</title>
+<link rel="manifest" href="./manifest.json" />
+<meta name="theme-color" content="#14171F" />
+<link rel="icon" href="./icons/icon-192.png" />
+<style>
+  :root {
+    --ink: #14171F;
+    --paper: #F7F5F0;
+    --rest: #3E8E86;
+    --rest-soft: #E4F1EF;
+    --exit: #C97A2B;
+    --exit-soft: #FBEEDF;
+    --report: #5B5A8C;
+    --report-soft: #ECEBF5;
+    --line: #E4E1D8;
+    --muted: #6B6B64;
+    --danger: #B44444;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; background: var(--paper); }
+  body {
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.45;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+  #app-root { max-width: 480px; margin: 0 auto; padding: 20px 16px 60px; }
+
+  .masthead { margin-bottom: 22px; }
+  .masthead h1 { font-family: Georgia, "Iowan Old Style", serif; font-weight: 600; font-size: 28px; letter-spacing: -0.01em; margin: 0 0 4px; }
+  .masthead p { margin: 0; color: var(--muted); font-size: 14px; max-width: 34ch; }
+
+  .track { border-radius: 14px; padding: 18px 16px 20px; margin-bottom: 18px; border: 1px solid var(--line); }
+  .track.rest { background: var(--rest-soft); border-color: #cfe6e2; }
+  .track.exit { background: var(--exit-soft); border-color: #f0d9bd; }
+  .track.report { background: var(--report-soft); border-color: #d6d4ea; }
+
+  .track h2 { font-family: Georgia, serif; font-size: 18px; margin: 0 0 2px; display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .track .sub { font-size: 13px; color: var(--muted); margin: 0 0 14px; }
+
+  .streak { font-size: 13px; font-weight: 600; white-space: nowrap; }
+  .rest .streak { color: var(--rest); }
+  .exit .streak { color: var(--exit); }
+
+  .dots { display: flex; gap: 6px; margin-bottom: 14px; }
+  .dot { width: 22px; height: 22px; border-radius: 6px; background: #fff; border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--muted); }
+  .dot.hit { background: var(--rest); border-color: var(--rest); color: #fff; }
+
+  .checklist { list-style: none; margin: 0 0 14px; padding: 0; }
+  .checklist li { display: flex; align-items: flex-start; gap: 10px; padding: 9px 0; border-bottom: 1px solid rgba(0,0,0,0.06); font-size: 14.5px; }
+  .checklist li:last-child { border-bottom: none; }
+  .checklist input[type="checkbox"] { width: 19px; height: 19px; margin-top: 1px; flex-shrink: 0; accent-color: var(--ink); }
+  .checklist label { flex: 1; cursor: pointer; }
+  .checklist .done label { color: var(--muted); text-decoration: line-through; }
+
+  button { font-family: inherit; font-size: 14px; font-weight: 600; border: none; border-radius: 9px; padding: 11px 16px; cursor: pointer; }
+  .btn-rest { background: var(--rest); color: #fff; }
+  .btn-exit { background: var(--exit); color: #fff; }
+  .btn-report { background: var(--report); color: #fff; }
+  .btn-ghost { background: transparent; border: 1px solid var(--line); color: var(--ink); font-weight: 500; }
+  .btn-block { display: block; width: 100%; text-align: center; }
+
+  .save-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .save-note { font-size: 12.5px; color: var(--muted); }
+
+  .offer-form { display: flex; gap: 8px; margin-top: 4px; margin-bottom: 10px; }
+  .offer-form input { flex: 1; font-family: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; background: #fff; min-width: 0; }
+  .offer-form input.ctc { flex: 0 0 84px; }
+
+  .offer-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: #fff; border: 1px solid var(--line); border-radius: 9px; padding: 10px 12px; margin-bottom: 8px; }
+  .offer-row .who { font-size: 14px; font-weight: 600; }
+  .offer-row .ctc { font-size: 13px; color: var(--muted); }
+  .verdict { font-size: 11.5px; font-weight: 700; padding: 4px 8px; border-radius: 999px; white-space: nowrap; text-transform: uppercase; letter-spacing: 0.02em; }
+  .verdict.decline { background: #f2dede; color: var(--danger); }
+  .verdict.floor { background: #dcefe0; color: #2f7a44; }
+  .verdict.strong { background: #d7ecea; color: var(--rest); }
+  .verdict.stretch { background: #fde4c2; color: #8a5216; }
+  .remove-btn { background: none; border: none; color: var(--muted); font-size: 18px; line-height: 1; padding: 2px 4px; cursor: pointer; }
+
+  .empty { font-size: 13px; color: var(--muted); padding: 8px 0; }
+  .floor-note { font-size: 12.5px; color: var(--muted); background: #fff; border: 1px dashed var(--line); border-radius: 8px; padding: 8px 10px; margin-top: 10px; }
+
+  .report-summary { font-size: 14px; margin: 0 0 10px; }
+  .report-meta { font-size: 12px; color: var(--muted); margin: 0 0 12px; }
+  .metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .metric { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+  .metric .v { font-size: 16px; font-weight: 700; }
+  .metric .k { font-size: 11px; color: var(--muted); }
+  .rec-list { margin: 0 0 12px; padding-left: 18px; font-size: 13.5px; }
+  .rec-list li { margin-bottom: 4px; }
+  .past-reports { font-size: 12.5px; color: var(--muted); }
+  .past-reports div { padding: 4px 0; border-top: 1px solid rgba(0,0,0,0.06); }
+
+  .io-row { display: flex; gap: 8px; }
+  .io-row button, .io-row label { flex: 1; }
+  input[type="file"] { display: none; }
+
+  .reset-row { text-align: center; margin-top: 8px; }
+  .reset-row button { background: none; border: none; color: var(--muted); font-size: 12px; text-decoration: underline; cursor: pointer; }
+
+  .install-hint { font-size: 12.5px; color: var(--muted); background: #fff; border: 1px solid var(--line); border-radius: 9px; padding: 10px 12px; margin-bottom: 18px; }
+</style>
+</head>
+<body>
+<div id="app-root"></div>
+
+<script>
+(function () {
+  const DEFAULT_RECOVERY_ITEMS = [
+    { id: "wake", label: "Held the anchor wake-time" },
+    { id: "trigger", label: "Alarm was out of arm's reach / used a trigger" },
+    { id: "light", label: "Got real light while upright (not lying in bed)" },
+    { id: "bedtime", label: "Protected tonight's bedtime" },
+    { id: "nap", label: "No long or late nap today" }
+  ];
+
+  const DEFAULT_EXIT_ITEMS = [
+    { id: "resume", label: "Resume finalized" },
+    { id: "linkedin", label: "LinkedIn headline + About updated" },
+    { id: "tabit", label: "Tabit pushed to GitHub with README" },
+    { id: "targets", label: "Target company list built" },
+    { id: "applying", label: "Applications underway" },
+    { id: "clawback", label: "Clawback figure confirmed in writing by HR" },
+    { id: "interview", label: "First interview scheduled" },
+    { id: "guildborne", label: "Guildborne: Quest Board live" }
+  ];
+
+  // --- local storage helpers (all data stays on this device) ---
+  function lsGet(key, fallback) {
+    try {
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    } catch (e) { return fallback; }
+  }
+  function lsSet(key, value) {
+    try { localStorage.setItem(key, JSON.stringify(value)); }
+    catch (e) { console.error("save failed", e); }
+  }
+
+  function todayKey(d) { return d.toISOString().slice(0, 10); }
+
+  function verdictFor(ctc) {
+    const n = parseFloat(ctc);
+    if (isNaN(n)) return null;
+    if (n < 7) return { cls: "decline", label: "Decline" };
+    if (n < 9) return { cls: "floor", label: "Floor \u2014 Accept" };
+    if (n < 12) return { cls: "strong", label: "Strong \u2014 Accept" };
+    return { cls: "stretch", label: "Stretch \u2014 Accept" };
+  }
+
+  let config = lsGet("trackerConfig", { recoveryItems: DEFAULT_RECOVERY_ITEMS, exitItems: DEFAULT_EXIT_ITEMS });
+  let recoveryLog = lsGet("recoveryLog", {});
+  let exitState = lsGet("exitMilestones", {});
+  let offers = lsGet("offerLog", []);
+  let reportHistory = lsGet("reportHistory", []);
+
+  function computeStreak() {
+    let streak = 0;
+    let d = new Date();
+    if (!(recoveryLog[todayKey(d)] && recoveryLog[todayKey(d)].wake)) {
+      d.setDate(d.getDate() - 1);
+    }
+    while (true) {
+      const k = todayKey(d);
+      if (recoveryLog[k] && recoveryLog[k].wake) {
+        streak++;
+        d.setDate(d.getDate() - 1);
+      } else break;
+    }
+    return streak;
+  }
+
+  function last7() {
+    const days = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const k = todayKey(d);
+      days.push({ label: d.toLocaleDateString(undefined, { weekday: "narrow" }), hit: !!(recoveryLog[k] && recoveryLog[k].wake) });
+    }
+    return days;
+  }
+
+  function downloadJSON(obj, filename) {
+    const blob = new Blob([JSON.stringify(obj, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function applyChecklistChanges(section, changes) {
+    if (!changes) return;
+    let items = section === "recovery" ? config.recoveryItems.slice() : config.exitItems.slice();
+    if (Array.isArray(changes.remove)) {
+      items = items.filter(it => !changes.remove.includes(it.id));
+    }
+    if (Array.isArray(changes.relabel)) {
+      changes.relabel.forEach(r => {
+        const found = items.find(it => it.id === r.id);
+        if (found) found.label = r.label;
+      });
+    }
+    if (Array.isArray(changes.add)) {
+      changes.add.forEach(a => {
+        if (!items.find(it => it.id === a.id)) items.push({ id: a.id, label: a.label });
+      });
+    }
+    if (section === "recovery") config.recoveryItems = items;
+    else config.exitItems = items;
+  }
+
+  function handleImportedReport(report) {
+    if (!report || report.type !== "analysis-report") {
+      alert("This doesn't look like a tracker analysis report file.");
+      return;
+    }
+    if (report.checklistChanges) {
+      applyChecklistChanges("recovery", report.checklistChanges.recovery);
+      applyChecklistChanges("exit", report.checklistChanges.exit);
+      lsSet("trackerConfig", config);
+    }
+    reportHistory.unshift({
+      reportDate: report.reportDate || todayKey(new Date()),
+      summary: report.summary || "",
+      metrics: report.metrics || {},
+      recommendations: report.recommendations || []
+    });
+    reportHistory = reportHistory.slice(0, 10);
+    lsSet("reportHistory", reportHistory);
+    render();
+  }
+
+  const root = document.getElementById("app-root");
+
+  function render() {
+    const today = new Date();
+    const tKey = todayKey(today);
+    const todayLog = recoveryLog[tKey] || {};
+    const streak = computeStreak();
+    const dots = last7();
+    const latestReport = reportHistory[0];
+    const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone;
+
+    root.innerHTML = `
+      <div class="masthead">
+        <h1>Two tracks</h1>
+        <p>Recovery and the exit plan, moving at the same time \u2014 neither waiting on the other. Everything here stays on this device.</p>
+      </div>
+
+      ${!isStandalone ? `
+      <div class="install-hint">
+        Running in the browser right now. In Chrome's menu, tap <strong>"Add to Home screen"</strong> / <strong>"Install app"</strong> to use this like a normal offline app.
+      </div>` : ""}
+
+      ${latestReport ? `
+      <section class="track report">
+        <h2>Latest analysis <span class="save-note">${latestReport.reportDate}</span></h2>
+        <p class="report-summary">${latestReport.summary}</p>
+        ${Object.keys(latestReport.metrics || {}).length ? `
+          <div class="metric-grid">
+            ${Object.entries(latestReport.metrics).map(([k, v]) => `
+              <div class="metric"><div class="v">${v}</div><div class="k">${k}</div></div>
+            `).join("")}
+          </div>` : ""}
+        ${latestReport.recommendations && latestReport.recommendations.length ? `
+          <ul class="rec-list">
+            ${latestReport.recommendations.map(r => `<li>${r}</li>`).join("")}
+          </ul>` : ""}
+        ${reportHistory.length > 1 ? `
+          <div class="past-reports">
+            ${reportHistory.slice(1).map(r => `<div>${r.reportDate} \u2014 ${r.summary}</div>`).join("")}
+          </div>` : ""}
+      </section>
+      ` : ""}
+
+      <section class="track rest">
+        <h2>Recover <span class="streak">${streak}-day streak</span></h2>
+        <p class="sub">${today.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" })}</p>
+        <div class="dots">${dots.map(d => `<div class="dot ${d.hit ? "hit" : ""}">${d.label}</div>`).join("")}</div>
+        <ul class="checklist" id="recovery-list">
+          ${config.recoveryItems.map(item => `
+            <li class="${todayLog[item.id] ? "done" : ""}">
+              <input type="checkbox" id="rec-${item.id}" data-id="${item.id}" ${todayLog[item.id] ? "checked" : ""} />
+              <label for="rec-${item.id}">${item.label}</label>
+            </li>
+          `).join("")}
+        </ul>
+        <div class="save-row">
+          <button class="btn-rest" id="save-recovery-btn">Save today</button>
+          <span class="save-note" id="recovery-save-note"></span>
+        </div>
+      </section>
+
+      <section class="track exit">
+        <h2>Exit</h2>
+        <p class="sub">Milestones toward handing in notice</p>
+        <ul class="checklist" id="exit-list">
+          ${config.exitItems.map(item => `
+            <li class="${exitState[item.id] ? "done" : ""}">
+              <input type="checkbox" id="exit-${item.id}" data-id="${item.id}" ${exitState[item.id] ? "checked" : ""} />
+              <label for="exit-${item.id}">${item.label}</label>
+            </li>
+          `).join("")}
+        </ul>
+
+        <h2 style="font-size:15px;margin-top:16px;">Offers on the table</h2>
+        <div class="offer-form">
+          <input type="text" id="offer-company" placeholder="Company" />
+          <input type="number" step="0.1" class="ctc" id="offer-ctc" placeholder="LPA" />
+          <button class="btn-exit" id="add-offer-btn">Add</button>
+        </div>
+        <div class="offer-list" id="offer-list">
+          ${offers.length === 0 ? '<p class="empty">No offers logged yet.</p>' :
+            offers.map((o, i) => {
+              const v = verdictFor(o.ctc);
+              return `
+                <div class="offer-row">
+                  <div><div class="who">${o.company}</div><div class="ctc">\u20B9${o.ctc} LPA</div></div>
+                  <span class="verdict ${v.cls}">${v.label}</span>
+                  <button class="remove-btn" data-i="${i}" aria-label="Remove">\u00d7</button>
+                </div>`;
+            }).join("")
+          }
+        </div>
+        <p class="floor-note">Floor: \u20B98\u20138.5L accept regardless of the clawback. \u20B99\u201310L is a strong outcome. \u20B912L+ is the stretch \u2014 take it if it shows up, don't wait for it.</p>
+      </section>
+
+      <section class="track report">
+        <h2>Analysis loop</h2>
+        <p class="sub">Export your data to send to Claude, then import the report it gives back</p>
+        <div class="io-row">
+          <button class="btn-report" id="export-btn">Export data</button>
+          <label class="btn-ghost btn-block" for="import-input" style="display:flex;align-items:center;justify-content:center;">Import report</label>
+          <input type="file" id="import-input" accept="application/json" />
+        </div>
+      </section>
+
+      <div class="reset-row">
+        <button id="reset-btn">Reset all tracker data</button>
+      </div>
+    `;
+
+    document.getElementById("save-recovery-btn").addEventListener("click", () => {
+      const entry = {};
+      config.recoveryItems.forEach(item => { entry[item.id] = document.getElementById("rec-" + item.id).checked; });
+      recoveryLog[tKey] = entry;
+      lsSet("recoveryLog", recoveryLog);
+      document.getElementById("recovery-save-note").textContent = "Saved";
+      render();
+    });
+
+    config.recoveryItems.forEach(item => {
+      const el = document.getElementById("rec-" + item.id);
+      if (el) el.addEventListener("change", (e) => { e.target.closest("li").classList.toggle("done", e.target.checked); });
+    });
+
+    config.exitItems.forEach(item => {
+      const el = document.getElementById("exit-" + item.id);
+      if (el) el.addEventListener("change", (e) => {
+        exitState[item.id] = e.target.checked;
+        e.target.closest("li").classList.toggle("done", e.target.checked);
+        lsSet("exitMilestones", exitState);
+      });
+    });
+
+    document.getElementById("add-offer-btn").addEventListener("click", () => {
+      const companyEl = document.getElementById("offer-company");
+      const ctcEl = document.getElementById("offer-ctc");
+      const company = companyEl.value.trim();
+      const ctc = ctcEl.value.trim();
+      if (!company || !ctc) return;
+      offers.push({ company, ctc });
+      lsSet("offerLog", offers);
+      render();
+    });
+
+    document.querySelectorAll(".remove-btn").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        const i = parseInt(e.target.getAttribute("data-i"), 10);
+        offers.splice(i, 1);
+        lsSet("offerLog", offers);
+        render();
+      });
+    });
+
+    document.getElementById("export-btn").addEventListener("click", () => {
+      const payload = {
+        type: "tracker-export",
+        exportedAt: new Date().toISOString(),
+        recoveryLog, exitMilestones: exitState, offers, config
+      };
+      downloadJSON(payload, "tracker-export-" + todayKey(today) + ".json");
+    });
+
+    document.getElementById("import-input").addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const report = JSON.parse(reader.result);
+          handleImportedReport(report);
+        } catch (err) {
+          alert("Couldn't read that file \u2014 make sure it's the analysis report JSON.");
+        }
+      };
+      reader.readAsText(file);
+      e.target.value = "";
+    });
+
+    document.getElementById("reset-btn").addEventListener("click", () => {
+      if (!confirm("Clear all saved tracker data on this device? This can't be undone.")) return;
+      recoveryLog = {}; exitState = {}; offers = []; reportHistory = [];
+      config = { recoveryItems: DEFAULT_RECOVERY_ITEMS, exitItems: DEFAULT_EXIT_ITEMS };
+      lsSet("recoveryLog", recoveryLog);
+      lsSet("exitMilestones", exitState);
+      lsSet("offerLog", offers);
+      lsSet("reportHistory", reportHistory);
+      lsSet("trackerConfig", config);
+      render();
+    });
+  }
+
+  render();
+
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("./service-worker.js").catch(() => {});
+    });
+  }
+})();
+</script>
+</body>
+</html>
